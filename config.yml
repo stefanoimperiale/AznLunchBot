@@ -1,0 +1,43 @@
+timezone: Europe/Rome
+
+job_time:
+  hours: 12
+  minutes: 0
+  seconds: 0
+
+pdfcrowd:
+  user: bacastelunch
+  api_key: d5d3f3565a75ddcdb9b3a8b6f85a47d6
+
+mail:
+  address: mario.sequestro@libero.it
+  pass: aizoonlunch
+  imap_server: imapmail.libero.it
+  imap_port: 993
+
+lunchzone:
+  CAPELLO:
+    emoji: 💇‍♂️
+    type: mail
+    address: pasticceriacapellotorino@gmail.com
+
+  VENTIDUE:
+    emoji: 2️⃣2️⃣
+    type: facebook
+    address: Al-ventidue-1975069026112657
+
+  MANGO's:
+    emoji: 🥭🍕
+    type: facebook
+    address: Viviana.Mango23
+
+  OSTERIA:
+    emoji: 👩‍🍳
+    type: whatsapp
+    address: ...
+
+  AMICI_MIEI:
+    emoji: 🧑🏾‍🤝‍🧑🏻
+    type: web
+    address: https://www.amicimieitorino.it/menu-pranzo/
+
