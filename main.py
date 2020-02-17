@@ -1,6 +1,7 @@
 import os
 import sys
 
+from flask import Flask
 from telegram.ext import CommandHandler
 from telegram.ext import InlineQueryHandler
 from telegram.ext import MessageHandler, Filters
@@ -18,6 +19,13 @@ if mode == "dev":
         upd.start_polling()
 elif mode == "prod":
     def run(upd):
+        app = Flask(__name__)
+
+        @app.route("/get")
+        def get():
+            return 'hello world'
+
+        app.run(threaded=True, port=8080)
         port = int(os.environ.get("PORT", "8443"))
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
         upd.start_webhook(listen="0.0.0.0",
