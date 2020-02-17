@@ -22,7 +22,7 @@ elif mode == "prod":
     # GET endpoint for keeping alive application
     app = Flask(__name__)
     port = int(os.environ.get("PORT", "8443"))
-    app.run(threaded=True, port=port)
+    app.run(port=5000)
 
     @app.route('/')
     def hello_world():
