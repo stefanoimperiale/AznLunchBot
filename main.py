@@ -31,7 +31,7 @@ elif mode == "prod":
 
         port = int(os.environ.get("PORT", "8443"))
         app.run(threaded=True, port=port)
-        # heroku_app_name = os.environ.get("HEROKU_APP_NAME")
+        heroku_app_name = os.environ.get("HEROKU_APP_NAME")
         # upd.start_webhook(listen="0.0.0.0",
         #                   port=port,
         #                   url_path=TOKEN)
