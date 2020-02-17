@@ -14,12 +14,12 @@ from util import error, config, MENU, logger
 # Getting mode, so we could define run function for local and Heroku setup
 mode = os.getenv("MODE")
 TOKEN = os.getenv("TOKEN")
+app = Flask(__name__)
 if mode == "dev":
     def run(upd):
         upd.start_polling()
 elif mode == "prod":
     def run(upd):
-        app = Flask(__name__)
 
         @app.route("/get")
         def get():
