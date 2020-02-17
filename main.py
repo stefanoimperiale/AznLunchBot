@@ -1,7 +1,7 @@
 import os
 import sys
 
-from flask import Flask
+from flask import Flask, request
 from telegram.ext import CommandHandler
 from telegram.ext import InlineQueryHandler
 from telegram.ext import MessageHandler, Filters
@@ -25,12 +25,16 @@ elif mode == "prod":
         def get():
             return 'hello world'
 
-        app.run(threaded=True, port=8080)
+        @app.route(f"/{TOKEN}")
+        def telegram():
+            print(request)
+
         port = int(os.environ.get("PORT", "8443"))
-        heroku_app_name = os.environ.get("HEROKU_APP_NAME")
-        upd.start_webhook(listen="0.0.0.0",
-                          port=port,
-                          url_path=TOKEN)
+        app.run(threaded=True, port=port)
+        # heroku_app_name = os.environ.get("HEROKU_APP_NAME")
+        # upd.start_webhook(listen="0.0.0.0",
+        #                   port=port,
+        #                   url_path=TOKEN)
         upd.bot.set_webhook(f"https://{heroku_app_name}.herokuapp.com/{TOKEN}")
 else:
     logger.error("No MODE specified!")
