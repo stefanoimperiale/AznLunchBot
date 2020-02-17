@@ -21,13 +21,14 @@ if mode == "dev":
 elif mode == "prod":
     # GET endpoint for keeping alive application
     app = Flask(__name__)
+    port = int(os.environ.get("PORT", "8443"))
+    app.run(threaded=True, port=port)
 
     @app.route('/')
     def hello_world():
         return 'Hello, World!'
 
     def run(upd):
-        port = int(os.environ.get("PORT", "8443"))
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
         upd.start_webhook(listen="0.0.0.0",
                           port=port,
