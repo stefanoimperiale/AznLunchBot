@@ -8,3 +8,4 @@ pdfcrowd
 pdf2image
 filetype
 flask
+gunicorn
