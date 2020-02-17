@@ -15,26 +15,23 @@ from util import error, config, MENU, logger
 mode = os.getenv("MODE")
 TOKEN = os.getenv("TOKEN")
 app = Flask(__name__)
+
+
+@app.route("/get")
+def get():
+    return 'hello world'
+
 if mode == "dev":
     def run(upd):
         upd.start_polling()
 elif mode == "prod":
     def run(upd):
-
-        @app.route("/get")
-        def get():
-            return 'hello world'
-
-        @app.route(f"/{TOKEN}")
-        def telegram():
-            print(request)
-
         port = int(os.environ.get("PORT", "8443"))
         app.run(threaded=True, port=port)
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
-        # upd.start_webhook(listen="0.0.0.0",
-        #                   port=port,
-        #                   url_path=TOKEN)
+        upd.start_webhook(listen="0.0.0.0",
+                          port=port,
+                          url_path=TOKEN)
         upd.bot.set_webhook(f"https://{heroku_app_name}.herokuapp.com/{TOKEN}")
 else:
     logger.error("No MODE specified!")
