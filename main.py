@@ -9,8 +9,6 @@ from telegram.ext import Updater, ConversationHandler
 from bot_commands import start, caps, start_collect, unknown, inline_query, stop_collect, get_menu, button_menu, \
     get_places_name
 from util import error, config, MENU, logger
-from flask import Flask
-
 
 # Getting mode, so we could define run function for local and Heroku setup
 mode = os.getenv("MODE")
@@ -19,16 +17,8 @@ if mode == "dev":
     def run(upd):
         upd.start_polling()
 elif mode == "prod":
-    # GET endpoint for keeping alive application
-    app = Flask(__name__)
-    port = int(os.environ.get("PORT", "8443"))
-    app.run(port=port)
-
-    @app.route('/hello')
-    def hello_world():
-        return 'Hello, World!'
-
     def run(upd):
+        port = int(os.environ.get("PORT", "8443"))
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
         upd.start_webhook(listen="0.0.0.0",
                           port=port,
@@ -37,6 +27,7 @@ elif mode == "prod":
 else:
     logger.error("No MODE specified!")
     sys.exit(1)
+
 
 if __name__ == '__main__':
     logger.info("Starting bot")
@@ -50,8 +41,8 @@ if __name__ == '__main__':
         entry_points=[CommandHandler('get_menu', get_menu)],
         states={
             MENU: [MessageHandler(Filters.regex(
-                '^({})$'.format('|'.join(get_places_name()))),
-                button_menu)],
+                            '^({})$'.format('|'.join(get_places_name()))),
+                            button_menu)],
         },
         fallbacks=[CommandHandler('get_menu', get_menu)],
     )
