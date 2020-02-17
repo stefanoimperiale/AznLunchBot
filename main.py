@@ -1,7 +1,6 @@
 import os
 import sys
 
-from flask import Flask, request
 from telegram.ext import CommandHandler
 from telegram.ext import InlineQueryHandler
 from telegram.ext import MessageHandler, Filters
@@ -14,20 +13,12 @@ from util import error, config, MENU, logger
 # Getting mode, so we could define run function for local and Heroku setup
 mode = os.getenv("MODE")
 TOKEN = os.getenv("TOKEN")
-app = Flask(__name__)
-
-
-@app.route("/get")
-def get():
-    return 'hello world'
-
 if mode == "dev":
     def run(upd):
         upd.start_polling()
 elif mode == "prod":
     def run(upd):
         port = int(os.environ.get("PORT", "8443"))
-        app.run(threaded=True, port=8080)
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
         upd.start_webhook(listen="0.0.0.0",
                           port=port,
