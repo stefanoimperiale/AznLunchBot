@@ -1,14 +1,25 @@
 import os
 import sys
+from abc import ABC
 
 from telegram.ext import CommandHandler
 from telegram.ext import InlineQueryHandler
 from telegram.ext import MessageHandler, Filters
 from telegram.ext import Updater, ConversationHandler
+from tornado.web import RequestHandler
 
 from bot_commands import start, caps, start_collect, unknown, inline_query, stop_collect, get_menu, button_menu, \
     get_places_name
 from util import error, config, MENU, logger
+
+
+class HelloWorld(RequestHandler, ABC):
+    """Print 'Hello, world!' as the response body."""
+
+    def get(self):
+        """Handle a GET request for saying Hello World!."""
+        self.write("Hello, world!")
+
 
 # Getting mode, so we could define run function for local and Heroku setup
 mode = os.getenv("MODE")
@@ -24,6 +35,7 @@ elif mode == "prod":
                           port=port,
                           url_path=TOKEN)
         upd.bot.set_webhook(f"https://{heroku_app_name}.herokuapp.com/{TOKEN}")
+        upd.httpd.http_server.request_callback.add_handlers(host_pattern=r".*", host_handlers=[(r"/get", HelloWorld)])
 else:
     logger.error("No MODE specified!")
     sys.exit(1)
