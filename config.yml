@@ -1,6 +1,7 @@
 timezone: Europe/Rome
 
 job_time:
+  save_interval: 5
   hours: 12
   minutes: 0
   seconds: 0

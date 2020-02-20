@@ -105,6 +105,10 @@ def button_menu(update, context):
         context.bot.send_message(update.message.chat_id, f'No configuration found for {message}')
 
 
+def save_jobs_job(context):
+    save_jobs(context.job_queue)
+
+
 def unknown(update, context):
     """ UNKNOWN COMMAND"""
     context.bot.send_message(chat_id=update.effective_chat.id, text="Sorry, I didn't understand that command.")
