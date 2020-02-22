@@ -50,7 +50,7 @@ def start_collect(update: telegram.Update, context: telegram.ext.CallbackContext
     jobs = context.job_queue.get_jobs_by_name('menu_ret')
     if len(jobs) > 0:
         context.bot.send_message(chat_id=update.message.chat_id,
-                                 text='Job already started! Stop it by /stop command')
+                                 text='Job already started! Stop it by /stop_collect command')
 
     else:
         context.bot.send_message(chat_id=update.message.chat_id,
