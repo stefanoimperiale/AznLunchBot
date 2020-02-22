@@ -211,6 +211,12 @@ def save_jobs_to_buffer(jq) -> Optional[io.BytesIO]:
     return pickle_buffer
 
 
+def delete_job():
+    mongo.get_collection(db, __jobs_collection).delete_one({
+        'name': JOBS_PICKLE
+    })
+
+
 class HelloWorld(RequestHandler, ABC):
     def get(self):
         """Handle a GET request for saying Hello World!."""

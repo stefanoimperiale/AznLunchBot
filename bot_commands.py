@@ -7,7 +7,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, ParseMod
 from telegram.utils.helpers import escape_markdown
 
 from retriever.menu_retriever import menu_retriever_by_job, retrieve_menu
-from util.utility import config, get_places_name, MENU, build_menu, save_jobs
+from util.utility import config, get_places_name, MENU, build_menu, save_jobs, delete_job
 
 
 def start(update, context):
@@ -71,6 +71,7 @@ def stop_collect(update: telegram.Update, context: telegram.ext.CallbackContext)
     """ COMMAND 'stop_collect' """
     jobs = context.job_queue.get_jobs_by_name('menu_ret')
     if len(jobs) > 0:
+        delete_job()
         jobs[0].schedule_removal()
         context.bot.send_message(chat_id=update.message.chat_id,
                                  text='The job has been stopped')
