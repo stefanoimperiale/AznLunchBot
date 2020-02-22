@@ -1,4 +1,5 @@
 import os
+import os
 import sys
 from datetime import timedelta
 
@@ -9,7 +10,7 @@ from telegram.ext import Updater, ConversationHandler
 
 from bot_commands import start, caps, start_collect, unknown, inline_query, stop_collect, get_menu, button_menu, \
     get_places_name, save_jobs_job
-from util import error, MENU, logger, HelloWorld, config, load_jobs, save_jobs
+from util.utility import error, MENU, logger, HelloWorld, config, load_jobs, save_jobs, MODE, TOKEN
 
 
 def set_handlers(dispatcher: Dispatcher):
@@ -48,13 +49,12 @@ def set_handlers(dispatcher: Dispatcher):
 
 
 # Getting mode, so we could define run function for local and Heroku setup
-mode = os.getenv("MODE")
-TOKEN = os.getenv("TOKEN")
-if mode == "dev":
+
+if MODE == "dev":
     def run(upd):
         upd.start_polling()
 
-elif mode == "prod":
+elif MODE == "prod":
     def run(upd):
         port = int(os.environ.get("PORT", "8443"))
         heroku_app_name = os.environ.get("HEROKU_APP_NAME")
@@ -71,6 +71,7 @@ else:
     sys.exit(1)
 
 if __name__ == '__main__':
+
     logger.info("Starting bot")
     updater = Updater(token=TOKEN, use_context=True)
     dispatcher = updater.dispatcher
@@ -79,11 +80,7 @@ if __name__ == '__main__':
     job_queue = updater.job_queue
     job_queue.run_repeating(save_jobs_job, timedelta(minutes=config.read('job_time')['save_interval']))
 
-    try:
-        load_jobs(job_queue)
-    except FileNotFoundError:
-        # First run
-        pass
+    load_jobs(job_queue)
 
     set_handlers(dispatcher)
     run(updater)

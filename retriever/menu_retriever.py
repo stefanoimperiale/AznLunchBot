@@ -1,3 +1,4 @@
+import sys
 from datetime import date
 from typing import List
 
@@ -8,7 +9,7 @@ from telegram import ParseMode
 
 from facebook_scraper.facebook_scraper import get_posts
 from retriever.mail_retriever import MailHandler
-from util import send_images_helper, config, list_in_chunks, html_to_png, send_file_helper
+from util.utility import send_images_helper, config, list_in_chunks, html_to_png, send_file_helper, logger, MAIL_PASS
 
 
 def retrieve_menu(context: telegram.ext.CallbackContext, chat_id: str, lunch_type: str, place_name: str,
@@ -46,7 +47,7 @@ def handle_web(context: telegram.ext.CallbackContext, chat_id: str, place_name: 
 
 
 def handle_mail(context, chat_id, place_name, address):
-    mail_handler = MailHandler()
+    mail_handler = MailHandler(MAIL_PASS)
     mail_ids = mail_handler.read_daily_mails(address)
 
     if len(mail_ids) == 0:

@@ -65,7 +65,3 @@ def main():
     # Run the bot until the user presses Ctrl-C or the process receives SIGINT,
     # SIGTERM or SIGABRT
     updater.idle()
-
-
-if __name__ == '__main__':
-    main()

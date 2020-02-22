@@ -1,9 +1,11 @@
 import io
 import logging
+import os
 import pickle
+import sys
 from abc import ABC
 from time import time
-from typing import List
+from typing import List, Optional
 
 import filetype
 import pdfcrowd
@@ -15,6 +17,8 @@ from tornado.web import RequestHandler
 from config_handler import ConfigReader
 
 # logger
+from util.mongo_connection import MongoHandler
+
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -24,6 +28,24 @@ config = ConfigReader()
 
 # STEPS for conversation handler
 MENU = range(1)
+
+# ENV VAR check
+MAIL_PASS = os.getenv('MAIL_PASS')
+MONGO_PASS = os.getenv("MONGO_PASS")
+MODE = os.getenv("MODE")
+TOKEN = os.getenv("TOKEN")
+
+if MONGO_PASS is None:
+    logger.error("No MONGO_PASS specified!")
+    sys.exit(1)
+if MAIL_PASS is None:
+    logger.error("No MAIL_PASS specified!")
+    sys.exit(1)
+
+# Mongo Configuration
+__mongo_config = config.read('mongo')
+mongo = MongoHandler(__mongo_config['cluster'], __mongo_config['user'], MONGO_PASS)
+db = mongo.get_db(__mongo_config['database'])
 
 
 def error(update, context):
@@ -119,36 +141,51 @@ def send_file_helper(context, chat_id, filename, file_content, caption):
                                   parse_mode=ParseMode.MARKDOWN, caption=caption)
 
 
-JOBS_PICKLE = 'job_tuples.pickle'
+JOBS_PICKLE = __mongo_config['job_file_name']
+__jobs_collection = __mongo_config['jobs_collection']
 # WARNING: This information may change in future versions (changes are planned)
 JOB_DATA = ('callback', 'interval', 'repeat', 'context', 'days', 'name', 'tzinfo')
 JOB_STATE = ('_remove', '_enabled')
 
 
 def load_jobs(jq):
-    with open(JOBS_PICKLE, 'rb') as fp:
-        while True:
-            try:
-                next_t, data, state = pickle.load(fp)
-            except EOFError:
-                break  # loaded all jobs
+    jobs_collection = mongo.get_collection(db, __jobs_collection)
+    job = jobs_collection.find_one({'name': JOBS_PICKLE})
+    if job is not None:
+        load_jobs_from_bytes(jq, job['content'])
 
-            # New object with the same data
-            job = Job(**{var: val for var, val in zip(JOB_DATA, data)})
 
-            # Restore the state it had
-            for var, val in zip(JOB_STATE, state):
-                attribute = getattr(job, var)
-                getattr(attribute, 'set' if val else 'clear')()
+def load_jobs_from_bytes(jq, pickle_buffer: bytes):
+    next_t, data, state = pickle.loads(pickle_buffer)
+    # New object with the same data
+    job = Job(**{var: val for var, val in zip(JOB_DATA, data)})
 
-            job.job_queue = jq
+    # Restore the state it had
+    for var, val in zip(JOB_STATE, state):
+        attribute = getattr(job, var)
+        getattr(attribute, 'set' if val else 'clear')()
 
-            next_t -= time()  # convert from absolute to relative time
+    job.job_queue = jq
 
-            jq._put(job, next_t)
+    next_t -= time()  # convert from absolute to relative time
+
+    jq._put(job, next_t)
 
 
 def save_jobs(jq):
+    jobs_buffer = save_jobs_to_buffer(jq)
+    if jobs_buffer is not None:
+        jobs_collection = mongo.get_collection(db, __jobs_collection)
+        file = {
+            'name': JOBS_PICKLE,
+            'content': jobs_buffer.getvalue()
+        }
+        result = jobs_collection.update({'name': JOBS_PICKLE}, file, upsert=True)
+        print("Save pickle file {}", result)
+
+
+def save_jobs_to_buffer(jq) -> Optional[io.BytesIO]:
+    pickle_buffer = None
     with jq._queue.mutex:  # in case job_queue makes a change
 
         if jq:
@@ -156,19 +193,22 @@ def save_jobs(jq):
         else:
             job_tuples = []
 
-        with open(JOBS_PICKLE, 'wb') as fp:
-            for next_t, job in job_tuples:
+        if len(job_tuples) > 0:
+            pickle_buffer = io.BytesIO()
 
-                # This job is always created at the start
-                if job.name == 'save_jobs_job':
-                    continue
+        for next_t, job in job_tuples:
+            # This job is always created at the start
+            if job.name == 'save_jobs_job':
+                continue
 
-                # Threading primitives are not pickleable
-                data = tuple(getattr(job, var) for var in JOB_DATA)
-                state = tuple(getattr(job, var).is_set() for var in JOB_STATE)
+            # Threading primitives are not pickleable
+            data = tuple(getattr(job, var) for var in JOB_DATA)
+            state = tuple(getattr(job, var).is_set() for var in JOB_STATE)
 
-                # Pickle the job
-                pickle.dump((next_t, data, state), fp)
+            # Pickle the job
+            pickle.dump((next_t, data, state), pickle_buffer)
+
+    return pickle_buffer
 
 
 class HelloWorld(RequestHandler, ABC):

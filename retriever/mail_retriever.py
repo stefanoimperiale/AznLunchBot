@@ -1,15 +1,16 @@
 import email
 import imaplib
+import os
 import time
 
-from util import config
+from util.utility import config
 
 
 class MailHandler:
-    def __init__(self):
+    def __init__(self, mail_password):
         mail_settings = config.read('mail')
         self.email_user = mail_settings['address']
-        self.password = mail_settings['pass']
+        self.password = mail_password
         self.imap_server = mail_settings['imap_server']
         self.imap_port = mail_settings['imap_port']
         self.mail = imaplib.IMAP4_SSL(self.imap_server, self.imap_port)

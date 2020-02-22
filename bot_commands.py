@@ -7,7 +7,7 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent, ParseMod
 from telegram.utils.helpers import escape_markdown
 
 from retriever.menu_retriever import menu_retriever_by_job, retrieve_menu
-from util import config, get_places_name, MENU, build_menu, save_jobs
+from util.utility import config, get_places_name, MENU, build_menu, save_jobs
 
 
 def start(update, context):

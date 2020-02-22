@@ -1,5 +1,12 @@
 timezone: Europe/Rome
 
+mongo:
+  database: aznLunch
+  cluster: mongoforbot
+  user: aznLunch
+  jobs_collection: jobs
+  job_file_name: job_tuples
+
 job_time:
   save_interval: 5
   hours: 12
@@ -12,7 +19,6 @@ pdfcrowd:
 
 mail:
   address: mario.sequestro@libero.it
-  pass: aizoonlunch
   imap_server: imapmail.libero.it
   imap_port: 993
 
